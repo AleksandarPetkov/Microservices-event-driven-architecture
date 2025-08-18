@@ -1,0 +1,84 @@
+1) Docker VS Virtual machine
+🔹 What are Containers?
+
+ A container is a lightweight, portable package that includes an application and everything it needs to run:
+ the code, runtime, libraries, dependencies, and configuration files.
+
+ They share the host operating system’s kernel, but each runs in its own isolated space.
+ Popular container technologies include Docker, Podman, and Kubernetes (for orchestration).
+
+🔹 What are Virtual Machines (VMs)?
+
+ A virtual machine is a full-fledged emulation of a computer system. Each VM includes:
+ a complete OPERATING SYSTEM (guest OS), the application, necessary binaries, and libraries.
+ They run on top of a hypervisor (like VMware, VirtualBox, or Hyper-V), which sits on the host system and manages multiple VMs.
+
+ Key Differences: Containers vs VMs
+ Feature	Containers 🐳                                                         Virtual Machines 💻
+ Isolation	Share the host OS kernel, isolated at the process level   	Fully isolated with own OS instance
+ Resource Usage	Lightweight, use less CPU/RAM	                                Heavy, require more resources
+ Startup Time	Very fast (seconds)	                                        Slower (minutes)
+ Portability	Easily portable across systems	                                Less portable (depends on hypervisor and OS)
+ Use Case	Microservices, CI/CD, cloud-native apps                 	Legacy apps, full OS environments, apps needing strong isolation
+ Size	Small (MBs)	                                                        Large (GBs)
+
+2) Image, Container, Containerization
+
+🔹 Image: A container image is like a blueprint or template for a container. It is a read-only package that contains:
+   [Application code, Runtime (JRE, Node.js, Python, etc.), Libraries and dependencies, Environment variables and config defaults]
+
+ 👉 Example: A Spring Boot service Docker image might be built from a Dockerfile using openjdk:17-jdk as a base and then adding your JAR file.
+
+ The image itself does not run; it’s a frozen snapshot.
+
+🔹 Container: A container is a running instance of a container image.
+ You can create multiple containers from the same image, just like you can make multiple cakes from the same recipe.
+ Containers are isolated processes that share the host OS kernel.
+
+ 👉 Example: Run your Spring Boot image: docker run -d -p 8080:8080 my-springboot-service [That command starts a container from the image.]
+ 
+
+🔹 Containerization: Containerization is the practice of packaging applications and their dependencies into containers.
+ It allows developers to build applications once and run them consistently anywhere (laptop, server, cloud).
+
+3) Most common ways to build Docker images:
+🔹 A. Dockerfile: The classic and most flexible method. You write a Dockerfile that defines:
+    base image (openjdk:17-jdk), dependencies, your app JAR, and how to run it.
+
+ ✅ Pros: Very customizable (can install tools, configs, OS-level stuff). Very customizable (can install tools, configs, OS-level stuff). Works for any language.
+ ⚠️ Cons: Requires Docker daemon. You manage layers, caching, and security.
+ 👉 Example (Dockerfile for Spring Boot JAR)
+ Build: docker build -t my-springboot-app .
+
+
+
+🔹 B. Buildpacks (Cloud Native Buildpacks / Paketo) A higher-level, opinionated way of building container images without writing a Dockerfile.
+   Spring Boot supports it directly with: 
+   ./mvnw spring-boot:build-image → Generates a production-ready image using Paketo Buildpacks.
+
+ ✅ Pros: No Dockerfile needed. Automatically handles JVM, OS updates, security patches. Integrated with Spring Boot & Maven/Gradle.
+ ⚠️ Cons: Less control (opinionated stack). Larger image sizes sometimes.
+
+
+🔹 C. Google Jib: A Java-specific image builder. Plugin for Maven or Gradle.
+  Builds images without Docker installed (works by pushing directly to registries).
+
+ ✅ Pros: Super fast (layered caching). No need for Dockerfile or Docker daemon. Great for CI/CD pipelines.
+ ⚠️ Cons: Only for Java/JVM apps. Less control vs raw Dockerfile.
+ Run: ./mvnw compile jib:build
+ 👉 Example (Maven plugin):
+
+ <plugin>
+  <groupId>com.google.cloud.tools</groupId>
+  <artifactId>jib-maven-plugin</artifactId>
+  <version>3.4.1</version>
+  <configuration>
+    <to>
+      <image>myregistry/my-springboot-app</image>
+    </to>
+  </configuration>
+ </plugin>
+
+
+
+

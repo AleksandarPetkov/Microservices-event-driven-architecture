@@ -1,0 +1,52 @@
+1) Plan it as Team-Lead/Architect: https://www.lucidchart.com/blog/ddd-event-storming
+
+ Event Storming is a workshop technique from Domain-Driven Design (DDD) where you:
+ Map domain events (things that happened in the business).
+ Discover commands, aggregates, and bounded contexts.
+ Reveal the natural boundaries for microservices.
+ You use sticky notes (or Miro/Mural boards) to map the flow of events across time.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+2) Strangler Fig pattern: is a software design approach for gradually migrating a monolithic application to a microservices architecture!
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+3) Guidelines:
+1. Managing the Right Size of a Microservice
+The "size" is less about lines of code and more about scope of responsibility.
+Too small → network chatter, orchestration pain.
+Too large → basically a monolith with a fancy name.
+
+Use Domain-Driven Design (DDD) bounded contexts
+Each microservice should encapsulate one bounded context (a distinct business capability).
+Example: Order Service should manage orders, not inventory or payment.
+High cohesion, low coupling
+All the logic inside a service should relate to its core function.
+Avoid leaking internal data structures to other services.
+Align with business capabilities
+Services should match the verbs and nouns in business language.
+If your business talks about "customer onboarding", that could be one service.
+Independently deployable and scalable
+If you can’t deploy one service without touching others, it’s too big or too coupled.
+
+Metrics to watch:
+How often do you need to change multiple services together for one feature?
+How much inter-service chatter happens for one user action?
+
+2. Defining Service Boundaries
+Boundaries are about what belongs inside a service and what must cross service calls.
+
+Steps to define boundaries well:
+Identify the bounded context using Event Storming or domain mapping.
+Draw the API contract first:
+Define the input/output without thinking about implementation.
+Example: OrderService.createOrder(request) should not care how payment is processed, just that it gets a result.
+
+Avoid shared databases:
+Each microservice should own its own data.
+Use APIs or asynchronous events for data sharing.
+Apply the "can I change it without breaking others?" test:
+If you can refactor inside without impacting others, you’ve got a good boundary.
+Keep boundaries stable but internals flexible:
+APIs should evolve slowly; inside, you can refactor freely.
