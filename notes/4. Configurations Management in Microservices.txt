@@ -1,0 +1,51 @@
+In Spring Boot, there are several ways to configure and inject externalized configuration
+ (like from application.properties or application.yml). The three common approaches are:
+
+1. @Value Annotation
+
+2. Environment Interface. Provided by Spring (org.springframework.core.env.Environment). Gives programmatic access to properties.
+   Useful when you want dynamic access at runtime.
+
+✅ Example:
+@Component
+public class AppSettings {
+    private final Environment env;
+    public String getAppName() {
+        return env.getProperty("app.name");
+    }
+}
+
+3. @ConfigurationProperties: Best suited for binding multiple related properties into a POJO.
+ Supports hierarchical properties (prefix based). Type-safe and easier to maintain.
+ Requires enabling configuration properties (@EnableConfigurationProperties or @Component).
+
+✅ Example (application.yml):
+
+app:
+  name: MyApplication
+  timeout: 45
+  security:
+    enabled: true
+    roles:
+      - USER
+      - ADMIN
+
+✅ POJO Binding:
+
+@Component
+@ConfigurationProperties(prefix = "app")
+public class AppProperties {
+
+    private String name;
+    private int timeout;
+    private Security security;
+
+    // getters and setters
+
+    public static class Security { => Object match from the xml file
+        private boolean enabled;
+        private List<String> roles;
+
+        // getters and setters
+    }
+}

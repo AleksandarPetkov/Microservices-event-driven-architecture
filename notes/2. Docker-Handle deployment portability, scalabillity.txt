@@ -53,11 +53,13 @@
 
 
 🔹 B. Buildpacks (Cloud Native Buildpacks / Paketo) A higher-level, opinionated way of building container images without writing a Dockerfile.
+   Need <package>jar<package> and maven plugin and include tags like [image,name] -> to be defined inside the pom.xml file
    Spring Boot supports it directly with: 
    ./mvnw spring-boot:build-image → Generates a production-ready image using Paketo Buildpacks.
 
  ✅ Pros: No Dockerfile needed. Automatically handles JVM, OS updates, security patches. Integrated with Spring Boot & Maven/Gradle.
- ⚠️ Cons: Less control (opinionated stack). Larger image sizes sometimes.
+    Also apply better practices production practices like compressing, security ect.. and our image can be less heavy [improve docker size]
+    compare to using docker file 
 
 
 🔹 C. Google Jib: A Java-specific image builder. Plugin for Maven or Gradle.
@@ -78,6 +80,28 @@
     </to>
   </configuration>
  </plugin>
+
+
+
+4)  Docker Compose: is a tool for defining and running multi-container Docker applications.
+ You define a YAML file (docker-compose.yml) where you configure:Services (containers), Networks, Volumes, Dependencies, Build instructions
+
+🔹 Instead of running docker run multiple times for different containers, you can run a single command: docker-compose up
+🔹 Docker compose works with Buildpacks and Docker file
+🔹 Can define all your services, networks, and volumes in a single YAML file (docker-compose.yml)
+🔹 XML file confugurations: 
+   - Networks: Both services share my-network for internal communication (db can be reached from app using hostname db).
+   - Volumes: db-data persists MySQL data even if the container stops.
+   - app-data: could be used to persist application files or logs.
+   - depends_on: Ensures db starts before app.
+
+ Command	        Description
+docker-compose up	Starts all services (creates containers if needed)
+docker-compose up -d	Starts in detached mode (background)
+docker-compose down	Stops and removes containers, networks (volumes persist unless -v is used)
+docker-compose ps	List running services
+docker-compose logs -f	Stream logs of services
+docker-compose build	Builds services from Dockerfiles
 
 
 

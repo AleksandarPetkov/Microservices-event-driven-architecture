@@ -1,0 +1,139 @@
+1️⃣                                        Cloud Native Applications
+
+Check then here => https://12factor.net/
+
+Definition:
+Cloud-native apps are designed to fully leverage cloud computing environments, including scalability, resilience, and flexibility. They are typically microservices-based, containerized, and dynamically orchestrated.
+
+Key characteristics:
+
+Aspect	Description
+Microservices	        App is decomposed into small, independent services that can be developed, deployed, and scaled individually.
+Containers	        Each service runs in a container for consistent deployment across environments.
+Dynamic Orchestration	Kubernetes, Docker Swarm, or other orchestrators manage scaling, failover, and service discovery.
+API-driven	        Services communicate via APIs (REST, gRPC, messaging).
+Continuous Delivery	CI/CD pipelines automate build, test, and deployment.
+Observability	        Logging, metrics, and tracing enable monitoring and troubleshooting.
+
+Why cloud-native?
+
+Maximizes scalability and resilience.
+Simplifies deployment across clouds.
+Supports rapid iteration and DevOps practices.
+
+2️⃣ 15-Factor Methodology (Evolution of 12-Factor)
+
+The 15-Factor App methodology is a set of principles for building modern cloud-native applications.
+It extends the original 12-Factor App to include newer considerations like observability, security, and microservices patterns.
+
+Here’s a deep dive into each factor:
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+I. Codebase
+
+Principle: One codebase tracked in version control per app, many deploys.
+Why: Ensures consistency across environments.
+Practice: Use Git repositories. Different environments (dev, staging, prod) deploy the same codebase.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+II. Dependencies
+
+Principle: Explicitly declare and isolate dependencies.
+Why: Avoid environment drift.
+Practice: Use dependency managers (Maven, npm, pip). Containers help isolate runtime.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+III. Config
+
+Principle: Store config in environment variables, not in code.
+Why: Code remains portable; config changes per environment.
+Practice: SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/mydb.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+IV. Backing Services
+
+Principle: Treat services like databases, message brokers, caches as attached resources.
+Why: Decouple app from specific services.
+Practice: Reference services via URLs or environment variables.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+V. Build, Release, Run
+
+Principle: Strictly separate build, release, and run stages.
+Why: Reduces errors between environments.
+
+Practice:
+Build: compile artifacts.
+Release: combine build + config.
+Run: execute release in the environment.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+VI. Processes
+
+Principle: Execute the app as one or more stateless processes.
+Why: Enables scaling and resilience.
+Practice: Store user sessions in external storage (Redis) instead of memory.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+VII. Port Binding
+
+Principle: Expose services via port binding instead of relying on runtime injection.
+Why: App is self-contained.
+Practice: Spring Boot: server.port=8080 and expose via Docker.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+VIII. Concurrency
+
+Principle: Scale out via the process model (horizontal scaling).
+Why: Each process handles a workload; scaling is trivial.
+Practice: Run multiple instances in Kubernetes Deployment.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+IX. Disposability
+
+Principle: Processes start fast, shut down gracefully.
+Why: Supports elasticity, deploys, crash recovery.
+Practice: Handle SIGTERM, SIGINT for graceful shutdown.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+X. Dev/Prod Parity
+
+Principle: Keep dev, staging, and production as similar as possible.
+Why: Reduces bugs due to environment differences.
+Practice: Use containers for local dev to match prod.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+XI. Logs
+
+Principle: Treat logs as event streams.
+Why: Aggregators can process logs for monitoring.
+Practice: Output logs to stdout/stderr; use ELK or Prometheus.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+XII. Admin Processes
+
+Principle: Run admin/management tasks as one-off processes.
+Why: Avoid contaminating long-running app processes.
+Practice: DB migrations or maintenance scripts run as separate containers.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+XIII. Observability
+
+Principle: Instrument apps for metrics, tracing, and health checks.
+Why: Cloud-native apps are distributed; observability is critical.
+Practice: Use Prometheus, Grafana, OpenTelemetry.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+XIV. Security
+
+Principle: Secrets and credentials are handled securely.
+Why: Avoid leaking sensitive information.
+Practice: Vault, KMS, or environment variables; avoid committing secrets.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+XV. Microservice Principles
+
+Principle: Each service has a single responsibility and communicates over well-defined APIs.
+Why: Supports scalability, independent deployment, resilience.
+Practice: REST, gRPC, event-driven architectures.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
