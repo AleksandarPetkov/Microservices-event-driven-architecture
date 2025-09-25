@@ -1,6 +1,70 @@
 In Spring Boot, there are several ways to configure and inject externalized configuration
  (like from application.properties or application.yml). The three common approaches are:
 
+*********** https://spring.io/projects/spring-cloud-config#overview ***************************
+
+0). Spring Cloud Config [Best approach for Microservices]
+In a microservices setup, you don’t want to hardcode configs (DB URLs, API keys, feature flags, etc.) inside each service. Instead, you put them in a Config Server and let services fetch them.
+
+A. Setup Spring Cloud Config Server. Create a Spring Boot app with dependency:
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-config-server</artifactId>
+</dependency>
+
+Enable it in your main class:
+@SpringBootApplication
+@EnableConfigServer
+
+Point it to a Git repo (or file system) with configs:
+# application.yml (Config Server)
+server:
+  port: 8888
+
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/my-org/config-repo
+
+
+B. Configure a Microservice (Client)
+
+In each microservice (client app), add dependency:
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-config</artifactId>
+</dependency>
+
+
+Then in bootstrap.yml (or bootstrap.properties):
+spring:
+  application:
+    name: order-service   # must match the config file name in Git repo
+  cloud:
+    config:
+      uri: http://localhost:8888
+
+3. Config Repo Structure
+
+In your Git repo, configs are named after services:
+order-service.yml
+payment-service.yml
+application.yml   # shared configs
+So if your microservice is order-service, it will fetch order-service.yml + application.yml.
+
+
+✅ Summary
+
+- Use Spring Cloud Config Server + Git repo for centralized configs.
+- Each microservice connects with spring-cloud-starter-config.
+- Configs are loaded at startup via bootstrap.yml.
+- Values inside the configuration service can be encrypted
+- Use Actuator refresh for live updates. [In case we change some property in conf server]
+
+
+
 1. @Value Annotation
 
 2. Environment Interface. Provided by Spring (org.springframework.core.env.Environment). Gives programmatic access to properties.
@@ -49,3 +113,4 @@ public class AppProperties {
         // getters and setters
     }
 }
+
