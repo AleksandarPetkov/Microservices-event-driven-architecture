@@ -1,0 +1,62 @@
+🔑 Core Idea of Resiliency in Microservices
+
+Resiliency is about building systems that can handle failures gracefully. In microservices, failures are inevitable (network latency, service downtime, overload, etc.), so resiliency patterns help prevent cascading failures, provide fallback responses, and ensure service availability.
+
+1. Preventing Cascade Failures:
+A cascade failure happens when one service fails, and that failure propagates to other dependent services.
+Example: If your "Order Service" calls "Payment Service" which is down, and every call times out, soon the Order Service also fails, causing a ripple       effect.
+
+Solution: Apply timeouts, retries, circuit breakers, and graceful degradation.
+
+
+2. Slow Responses:
+Sometimes services don’t fail outright but respond very slowly.
+This is dangerous because it ties up resources (threads, DB connections, etc.) and can make the whole system unresponsive.
+Solution:
+Use timeouts (don’t wait forever).
+Apply bulkheads (isolate resources so one slow service doesn’t block all requests).
+Monitor latency SLAs to detect early degradation.
+
+
+3. Fallback Mechanism:
+When a service is unavailable or slow, provide an alternative response instead of failing.
+Types of fallbacks:
+Static fallback → return cached/default data.
+Degraded mode → limited functionality (e.g., “Payments not available, but you can still add items to cart”).
+Secondary service → route to a backup service if the main one fails.
+Example: If your "Recommendation Service" fails, show popular products instead of personalized ones.
+
+
+4. Circuit Breaker Pattern:
+If a service is failing repeatedly, stop calling it for a while to prevent overload.
+States:
+Closed → normal operations.
+Open → calls fail immediately (no load on broken service).
+Half-open → test a few requests to see if the service has recovered.
+Example tools: Netflix Hystrix (legacy), Resilience4j, Spring Cloud Circuit Breaker.
+
+
+5. Retry Pattern:
+Automatically retry a failed request, assuming the failure might be temporary (like a network glitch).
+Best practices:
+Use exponential backoff (wait longer between retries).
+Add jitter (random delay) to avoid retry storms.
+Set a retry limit to avoid infinite retries.
+Example: Retry calling "Payment Service" if the first attempt times out, but only up to 3 times.
+
+
+6. Rate Limiter Pattern:
+Protects services from being overwhelmed by too many requests.
+Ensures fair usage and prevents denial of service (DoS)-like overload.
+Common algorithms:
+Token Bucket / Leaky Bucket → smooth out bursts.
+Fixed Window / Sliding Window → limit requests per time frame.
+Example: API gateway allowing only 100 requests per minute per client.
+
+
+🧩 How These Fit Together
+Timeouts: prevent hanging on slow responses.
+Retries: handle transient failures.
+Circuit breakers: stop hammering unhealthy services.
+Fallbacks: keep degraded functionality alive.
+Rate limiting & bulkheads: prevent overload and isolate failures.

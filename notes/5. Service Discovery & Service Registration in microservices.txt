@@ -1,0 +1,53 @@
+Internal communication. Challenges in Internal Communication Between Microservices
+
+Service Discovery:
+Microservices often run on dynamic IPs/ports (containers, pods, VMs).
+Hardcoding addresses is impossible when services scale up/down.
+
+Solution: Service discovery systems (like Consul, Eureka, Zookeeper, Kubernetes DNS) that keep a real-time registry.
+
+Service Registration:
+A new instance must register itself with the discovery service when it comes online.
+
+Two models:
+
+Self-registration: Service registers/unregisters itself.
+Third-party registration: An orchestrator (like Kubernetes) updates the registry automatically.
+
+Dynamic Scaling (Up/Down Containers)
+Containers scale based on load.
+When scaling up: New instances must register and get traffic routed.
+When scaling down: Dead/unhealthy containers must be removed to avoid sending traffic to them.
+
+Handling Unhealthy Instances:
+Failures are common (crashes, high latency).
+Systems use health checks (HTTP pings, TCP checks, custom probes).
+Orchestrators (Kubernetes, Docker Swarm) replace unhealthy instances automatically.
+
+Load Balancing Inside the Network:
+Traffic needs to be distributed evenly across service instances. Approaches:
+Client-side load balancing (e.g., Netflix Ribbon): Client queries service registry, picks an instance.
+Server-side load balancing (e.g., Nginx, HAProxy, Envoy): A proxy distributes traffic.
+Service mesh load balancing (e.g., Istio, Linkerd): Sidecar proxies handle retries, circuit-breaking, and routing.
+
+Network Latency & Reliability:
+More services = more hops, so latency increases.
+Solutions: Async messaging (Kafka, RabbitMQ), retries with backoff, circuit breakers.
+
+Security in Service-to-Service Communication:
+Mutual TLS (mTLS), service mesh policies, API gateways for authentication/authorization.
+
+🛠️ How It Works in a Typical Microservice Network (Example: Kubernetes)
+Service Discovery: Each pod gets a unique IP; Kubernetes DNS maps service names to these IPs.
+Registration: Kubernetes automatically updates endpoints when pods start/stop.
+Scaling: Kubernetes HPA (Horizontal Pod Autoscaler) adds/removes pods.
+Health Checks: Liveness/readiness probes decide if traffic should be routed.
+Load Balancing: Kubernetes Services (ClusterIP, NodePort, LoadBalancer) + kube-proxy route requests across healthy pods.
+Resilience: Istio/Linkerd can add retries, circuit breakers, and observability.
+
+✅ In short:
+
+Service discovery + registry → Find who is available.
+Dynamic scaling + registration/deregistration → Keep registry up to date.
+Health checks + orchestration → Replace broken services automatically.
+Load balancing (client-side/server-side/mesh) → Distribute traffic evenly.
