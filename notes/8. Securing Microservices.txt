@@ -1,0 +1,179 @@
+1. What is OAuth2?
+OAuth2 (Open Authorization 2.0) is a framework that allows secure delegated access to resources on behalf of a user
+without sharing their credentials (like passwords).
+Instead of giving your password to every app, you authorize them to access specific resources via tokens.
+
+
+2. The Problem OAuth2 Solves
+Before OAuth2:
+Apps asked for your username & password directly to access another service (e.g., a calendar app asking for your Gmail password).
+Risky because:
+You had to trust the 3rd party with your password.
+If the app was compromised, your password was leaked.
+You had to give full access, not limited access.
+With OAuth2:
+You don’t share your password with 3rd-party apps.
+You give limited permission (scopes) via tokens.
+Example: A travel app can read your Google Calendar to check flight times, but can’t delete emails.
+
+
+3. Example: Google Products
+Say you log in to a fitness app with “Sign in with Google”:
+The fitness app (Client) redirects you to Google’s login page.
+You log in at Google (not in the app).
+Google asks: “Allow this app to read your Google Fit data?” (Scopes).
+If you consent, Google gives the app an access token.
+The app uses that token to fetch only the allowed data from Google APIs.
+You never gave the app your Google password.
+
+
+4. OAuth2 vs Basic Authentication
+Basic Authentication: Each request has Authorization: Basic <base64(username:password)>.
+Simple, but insecure (password shared on every request, even across services).
+OAuth2:
+Password stays with the authorization server.
+Tokens replace credentials.
+Tokens can expire, be revoked, and carry limited scope.
+
+
+5. OAuth2 Roles
+Resource Owner → User (owns the data).
+Client → Application wanting access (e.g., fitness app).
+Authorization Server → Issues tokens after authenticating user (e.g., Google Accounts, Keycloak).
+Resource Server → API that hosts the protected data (e.g., Google Calendar API, Stack Overflow API).
+
+
+6. Scopes
+Define what the client can do.
+Examples:
+email → read user’s email address
+profile → read basic profile info
+calendar.readonly → read calendar events, but not edit
+
+👉 Example:
+On Stack Overflow, a client app could request scopes like:
+read_inbox (read messages),
+no_expiry (token never expires),
+write_access (post questions).
+On Keycloak, admins define custom scopes for APIs, e.g., order:read, order:write.
+
+
+7. Grant Flows (Ways to Get Tokens) OAuth2 defines several flows depending on the type of client and situation:
+
+👉 Authorization Code Flow is an OAuth 2.0 flow designed for server-side applications (or secure clients) where the client can keep a secret safely.
+   It is also used for OpenID Connect to get user identity information.
+
+ User          Client        Keycloak  (Auth Server)         Resource Server
+ |              |                  |                             |
+ |----Access---->|                 |                             |
+ |              |---Redirect------>|                             |
+ |              |                  |--Login/Consent------------->|
+ |              |<---Auth Code---- |                             |
+ |<--Redirect-- |                  |                             |
+ |              |---Token Request->|                             |
+ |              |<--Tokens---------|                             |
+ |              |---API Request------------------->|             |
+ |              |<-----------------Data-------------|            |
+
+
+👉 Client Credentials Grant Flow. 
+  This is the flow used when no end-user is involved — just a client application
+ (like a backend service, job scheduler, or microservice) accessing another service (API) on its own behalf.
+
+ When to Use Client Credentials Flow -> Server-to-server communication. No user login, only application identity!
+
+Example cases:
+A microservice calls another microservice.
+A backend job fetches data from an external API (e.g., payment gateway, CRM system).
+
+What Needs to Be Provided:
+To use this flow, the client must register with the Authorization Server (AS). The registration gives:
+Client ID → Public identifier of the application.
+Client Secret → Password shared between app and AS (must be kept safe).
+Token Endpoint URL → Where the client requests tokens.
+Scopes (optional) → Define what the app is allowed to access.
+
+No username/password of a user — only app credentials.
+
+Step-by-Step Communication:
+
+Step 1: Client requests an access token
+The client sends a POST request to the Authorization Server’s token endpoint:
+grant_type=client_credentials
+&client_id=CLIENT_ID
+&client_secret=CLIENT_SECRET
+&scope=read:reports write:logs
+
+Step 2: Authorization Server (Keycloak) verifies credentials. The Authorization Server checks if the client_id and client_secret are valid.
+If valid, it issues an Access Token (often a JWT).
+Step 3: Client calls Resource Server. The client now calls the Resource Server’s API with the token:
+Step 4: Resource Server validates the token. The Resource Server checks if the token is valid
+
+
+8. Separation Between Business & Security Logic
+The business app (Client) doesn’t handle login or password verification.
+The Authorization Server (Google, Keycloak, Auth0, etc.) is responsible for authentication and issuing tokens.
+This means apps don’t need to reinvent security or store passwords.
+
+
+9. Who Checks the Credentials?
+The Authorization Server (e.g., Google, Keycloak) verifies the user’s credentials.
+The Client never sees the password.
+The Resource Server only checks if the token is valid (sometimes via introspection or signature verification).
+
+10. Oauth2 and OpenID
+
+🔑 A) OAuth2 in a nutshell. Purpose: Authorization framework.
+OAuth2 lets a client app access a resource server on behalf of a user, without sharing the user’s password.
+It issues access tokens that represent delegated permissions.
+👉 OAuth2 says nothing about who the user is — it only lets an app act on their behalf.
+Example:
+A flight app can access your Google Calendar via OAuth2 to read flight events, but OAuth2 itself doesn’t tell the app your name or email.
+
+
+🔑 B) OpenID Connect (OIDC). Built on top of OAuth2.
+Adds authentication (proving the identity of the user).
+Defines a special token: the ID Token (usually a JWT) that contains info like:
+{
+  "sub": "1234567890",   // unique user ID at the provider
+  "name": "Alice Smith",
+  "email": "alice@example.com"
+}
+Also defines the UserInfo endpoint: an API for apps to fetch standard profile info.
+👉 With OIDC, the client app not only gets an access token for APIs, but also an ID token to know who the user is.
+
+
+🔑 C) Relationship: OAuth2 vs OIDC
+Aspect	OAuth2	                                                           OpenID Connect
+Main purpose	Authorization (what the client can do)	          Authentication (who the user is)
+Tokens	        Access Token (scopes for APIs)	                  ID Token (identity of user) + Access Token
+Flow used	Authorization Code, Client Credentials, etc.	  Authorization Code Flow with “openid” scope
+Where used	APIs (e.g., Google Drive API)	                  Login (e.g., “Sign in with Google”)
+Knows user identity?	❌ No	                                                  ✅ Yes
+
+
+🔑 D) Example: “Sign in with Google”
+
+User clicks Login with Google
+Client redirects user to Google Authorization Server.
+User authenticates at Google
+Username/password entered at Google (Authentication = OIDC).
+Consent screen
+“This app wants to read your profile and email” (Authorization = OAuth2 scopes).
+Tokens returned to client
+ID Token (OIDC) → app knows user’s identity (email, sub).
+Access Token (OAuth2) → app can call Google APIs (e.g., get profile info, calendar).
+
+
+🔑 E) When to Use What
+If your app just needs to access APIs → OAuth2 only.
+If your app needs to let users “log in” → OAuth2 + OIDC.
+In practice: Most login integrations use OIDC (because apps always need identity).
+
+✅ Summary
+OAuth2 = delegated authorization (access without password).
+OpenID Connect = identity layer on top of OAuth2 (login + user info).
+
+
+11) Using Kubernetes NetworkPolicies (firewall rules) [Docker environment] in order to protect unsecured internal microservices in case where hacker directly 
+    try to call them 

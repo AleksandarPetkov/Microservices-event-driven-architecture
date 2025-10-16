@@ -1,0 +1,72 @@
+Resources: https://www.youtube.com/watch?v=BObDQv_sCb4
+
+1) Apache Kafka VS RabbitMQ are two of the most widely used message brokers / messaging systems, but they are designed for different use cases and architectural philosophies.
+
+Let’s go deep into their comparison, covering architecture, performance, use cases, message guarantees, scaling, and integration — including when to use which.
+
+🧩 Overview
+Feature	                            Apache Kafka	                                                         RabbitMQ
+Type	                 Distributed Event Streaming Platform	                               Traditional Message Broker (Queue-based)
+Primary Use Case	 Real-time data streaming, event sourcing, log aggregation	       Message queueing, task distribution, reliable delivery
+Message Model	         Publish–Subscribe (Topic-based)	                               Queue (Point-to-Point) and Pub/Sub (via exchanges)
+Persistence	         Messages stored on disk , can be replayed	                       In memory 
+Ordering	         Guaranteed per partition	                                       Ordered delivery within a queue 
+Throughput	         Very high (millions of messages/sec)	                               Moderate (thousands to hundreds of thousands messages/sec)
+Scalability	         Horizontal scaling via partitions and brokers	                       Vertical scaling or clustering (less linear scalability)
+Message Retention	 Configurable (e.g., retain for 7 days regardless of consumption)      Messages are removed once consumed!
+
+⚙️ Architecture
+ -- Kafka. Core Concept: Distributed commit log. Components:
+Producers: Write messages to topics.
+Topics: Partitioned logs where messages are stored.
+Consumers: Read messages at their own pace (offset-based).
+Brokers: Kafka servers handling storage and replication.
+ZooKeeper / KRaft: Coordinates metadata (Zookeeper is being phased out for KRaft).
+
+Key characteristic:
+Data is immutable and retained for a configured time period, allowing replaying messages and reconstructing state.
+
+-- RabbitMQ. Core Concept: Message broker implementing AMQP.
+Components:
+Producer → Exchange → Queue → Consumer
+Exchanges route messages to queues based on routing keys or bindings.
+Supports several exchange types (direct, topic, fanout, headers).
+
+Key characteristic:
+Once a message is delivered and acknowledged, it is removed from the queue — i.e., transient message passing rather than event stream persistence.
+
+2) 🧠 What Is a Schema Registry?
+In Apache Kafka, messages are usually serialized (converted to bytes) before being sent to topics — using formats like:Avro, Protobuf, JSON Schema
+
+A Schema Registry is a centralized service that stores and manages these message schemas (structure definitions).
+It ensures producers and consumers agree on the data structure, even as schemas evolve over time.
+👉 The most common implementation is Confluent Schema Registry, which works with Kafka.
+
+⚙️ Why You Need a Schema Registry. Without a registry:
+A producer might change a field name or type.
+A consumer might still expect the old version.
+Boom 💥 — deserialization errors.
+
+With a Schema Registry:
+Each schema is versioned.
+Producers register new versions automatically.
+Consumers validate compatibility (backward, forward, etc.).
+
+how Schema Registry ensures data compatibility in Kafka-based systems.
+
+Let’s unpack it clearly step by step 👇
+
+🧠 Core Idea
+
+When using Kafka + Schema Registry (with Avro, Protobuf, or JSON Schema):
+Every message you send to Kafka is serialized using a schema.
+That schema is registered with the Schema Registry and assigned a unique ID.
+The message itself includes that schema ID in its header or binary payload.
+So when a producer changes its model, the new schema will be re-registered with Schema Registry, and Schema Registry decides whether it’s compatible with previous versions.
+
+🧩 Example Flow
+Producer defines a schema (e.g., User.avsc for Avro).
+Producer sends serialized messages to Kafka using that schema.
+Schema is registered with Schema Registry and gets an ID.
+Message payload includes that schema ID.
+Consumer retrieves the schema from the registry (by ID) and deserializes properly.
