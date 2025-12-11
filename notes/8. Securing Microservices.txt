@@ -77,7 +77,7 @@ On Keycloak, admins define custom scopes for APIs, e.g., order:read, order:write
 
 
 👉 Client Credentials Grant Flow. 
-  This is the flow used when no end-user is involved — just a client application
+  This is the flow used when NO end-user is involved — just a client application
  (like a backend service, job scheduler, or microservice) accessing another service (API) on its own behalf.
 
  When to Use Client Credentials Flow -> Server-to-server communication. No user login, only application identity!
@@ -175,5 +175,23 @@ OAuth2 = delegated authorization (access without password).
 OpenID Connect = identity layer on top of OAuth2 (login + user info).
 
 
-11) Using Kubernetes NetworkPolicies (firewall rules) [Docker environment] in order to protect unsecured internal microservices in case where hacker directly 
-    try to call them 
+11) Using Kubernetes NetworkPolicies (firewall rules) [Docker environment] in order to protect unsecured internal microservices in case where hacker directly try to call them 
+
+12) Visualize the Oauth2 FLOWS: https://www.oauth.com/playground/
+
+13) Key Security mechanism Public / Private key
+
+🔐 What role does the public key play?
+
+ - Every JWT issued by Keycloak is digitally signed using a private key stored inside Keycloak.
+ To verify that the JWT wasn’t tampered with, Spring Security needs the corresponding public key.
+ That’s how the trust is established between Keycloak (Identity Provider) and your Spring app (Resource Server).
+ 
+ - When Keycloak issues a JWT access token, it uses one of its private keys to sign it, usually with the algorithm RS256 (RSA + SHA256).
+
+🧭 How Spring fetch the public key
+ - When you set: spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:7080/realms/master/protocol/openid-connect/certs
+ Spring Security automatically fetches a JSON Web Key Set (JWKS) document from Keycloak
+
+- Spring Security automatically checks token validity using the public key(s) from Keycloak —
+matching by kid, verifying the signature, and enforcing expiry, without ever calling Keycloak.

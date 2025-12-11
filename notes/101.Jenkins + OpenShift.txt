@@ -1,0 +1,138 @@
+Good tutorial => https://www.youtube.com/watch?v=6YZvp2GwT0A
+
+What is Jenkins?
+
+Jenkins is an open-source automation server. It helps automate repetitive tasks related to building, testing, and deploying software.
+In simpler terms, Jenkins allows developers to automate the software development lifecycle (SDLC).
+
+Key points:
+Written in Java.
+Web-based interface (so you can access it in a browser).
+Supports plugins to integrate with many tools (Git, Maven, Docker, Kubernetes, etc.).
+
+2. What is Jenkins used for?
+Jenkins is mainly used for Continuous Integration (CI) and Continuous Delivery/Deployment (CD).
+Continuous Integration (CI):
+Developers frequently merge code into a shared repository.
+Jenkins automatically builds and tests the code to find errors early.
+Continuous Delivery/Deployment (CD):
+Jenkins automates deployment to production or staging environments after passing tests.
+
+Other uses:
+Running automated tests.
+Monitoring execution of repeated jobs.
+Automating tasks like sending notifications or generating reports.
+
+3. What are Jenkins Pipelines?
+A pipeline is a set of automated steps (or stages) that define the process of building, testing, and deploying software.
+Think of it like a recipe: you define the ingredients (code) and the steps (build → test → deploy). Jenkins runs the pipeline automatically.
+Two types of pipelines:
+Declarative Pipeline – Uses a simple, structured syntax, easy for beginners.
+Scripted Pipeline – More flexible, uses Groovy code, for advanced users.
+
+Example stages in a pipeline:
+Checkout – Pull code from Git repository.
+Build – Compile code or create artifacts.
+Test – Run automated tests.
+Deploy – Deploy to a server or cloud.
+
+✅ Summary:
+Jenkins = Automation server for CI/CD.
+Used to automate building, testing, and deploying software.
+Pipelines = Scripts or steps that define how code moves from development to production.
+
+
+*** Jenkins Infrastructure Overview, A Jenkins infrastructure typically has three main components:
+A. Jenkins Master (Controller)
+The central server that manages everything.
+
+Responsibilities:
+Manages jobs and pipelines.
+Schedules builds.
+Assigns work to agents (slaves).
+Provides the web UI and REST API.
+Think of it as the brain of Jenkins.
+
+B. Jenkins Agent (Slave)
+Machines that execute the actual jobs (build, test, deploy).
+They can be static (permanent) or dynamic (cloud).
+
+Using cloud/dynamic agents is great for scalability and cost efficiency.
+Agents can run on:
+Physical servers
+Virtual machines
+Docker containers
+
+Popular cloud agents include AWS EC2, Azure VMs, Google Cloud, Kubernetes pods, and Docker containers.
+Allows distributed builds, so multiple jobs can run simultaneously.
+
+C. Build/Job Repository
+Source code is stored in a version control system (VCS) like Git, SVN, etc.
+Jenkins fetches code from the repository during builds.
+
+2. Workflow Example
+Let’s say you have a web application that you want to build, test, and deploy automatically:
+Step-by-step Flow:
+
+Code Commit:
+Developer pushes code to GitHub.
+
+Trigger Jenkins Job/Pipeline:
+Jenkins master detects the commit (via webhook) and triggers the pipeline.
+
+Pipeline Execution on Agent:
+Stage 1: Checkout → Pull the latest code from GitHub.
+Stage 2: Build → Compile code, create artifacts (e.g., .jar or .war file).
+Stage 3: Test → Run unit tests or integration tests.
+Stage 4: Deploy → Deploy to staging/production server.
+
+***Example: Scripted Pipeline
+node {
+    // Allocate an agent to run the pipeline
+
+    try {
+        stage('Clone') {
+            echo 'Cloning code from Git repository...'
+            // Clone the Git repository
+            git branch: 'main', url: 'https://github.com/your-repo/your-project.git'
+        }
+
+        stage('Build') {
+            echo 'Building the project...'
+            // Compile code / build project (Maven example)
+            sh 'mvn clean compile'
+        }
+
+        stage('Test') {  ==> For example we can include other tests like Integration, UI ect.. just new stage with corresponding command, 
+            echo 'Running tests...'
+            // Run unit tests
+            sh 'mvn test'
+        }
+
+        stage('Package') {
+            echo 'Packaging the application...'
+            // Create deployable artifact
+            sh 'mvn package'
+        }
+
+        stage('Deploy') {
+            echo 'Deploying the application...'
+            // Example deployment (adjust to your environment)
+            sh '''
+                scp target/your-app.war user@server:/opt/tomcat/webapps/
+                ssh user@server "systemctl restart tomcat"
+            '''
+        }
+
+    } catch (err) {
+        // Handle errors
+        echo "Pipeline failed: ${err}"
+        currentBuild.result = 'FAILURE'
+        throw err
+    } finally {
+        stage('Cleanup') {
+            echo 'Cleaning workspace...'
+            cleanWs() // Clean Jenkins workspace
+        }
+    }
+}

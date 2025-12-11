@@ -85,7 +85,12 @@
 
 4)  Docker Compose: is a tool for defining and running multi-container Docker applications.
  You define a YAML file (docker-compose.yml) where you configure:Services (containers), Networks, Volumes, Dependencies, Build instructions
-
+🔹 docker compose requires already generated images! Spring Boot has native Buildpack support built in since version 2.3+,
+   meaning you don’t even need Dockerfiles or the pack
+   Create a JAR/WAR -> .\mvnw clean install
+   Build image -> ./mvnw spring-boot:build-image "-Dspring-boot.build-image.imageName=pr-products"  -> [PowerShell syntax]
+   Run everything -> docker-compose up -d [Detach mode] / docker compose up -d --build
+ 
 🔹 Instead of running docker run multiple times for different containers, you can run a single command: docker-compose up
 🔹 Docker compose works with Buildpacks and Docker file
 🔹 Can define all your services, networks, and volumes in a single YAML file (docker-compose.yml)
@@ -104,5 +109,21 @@ docker-compose logs -f	Stream logs of services
 docker-compose build	Builds services from Dockerfiles
 
 
+✅ Quick summary
+
+Action	                              Command
+Build images	                docker compose build
+Start & create containers	docker compose up -d
+Check status	                docker compose ps
+View logs	                docker compose logs -f
+Stop & remove all	        docker compose down
+
+*** Start docker desktop from PowerShell: Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+
+*** Start Kafka using docker image:
+docker run -d -p 9092:9092 --name kafka-server apache/kafka:4.1.0
+
+
+mvn clean package && docker compose up --build
 
 
